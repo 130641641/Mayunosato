@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>那須高原別荘村 繭の里 予約システム</title>
+<style>
+  :root {
+    --bg: #f2f6fc;
+    --bg-accent: #e7efff;
+    --surface: #ffffff;
+    --surface-soft: #f8fbff;
+    --text: #1f2937;
+    --text-sub: #64748b;
+    --border: #dbe3f0;
+    --primary: #1d4ed8;
+    --primary-dark: #1e3a8a;
+    --primary-soft: #eaf1ff;
+    --ok-bg: #dff6e8;
+    --ok-text: #166534;
+    --danger-bg: #ffe3e3;
+    --danger-text: #991b1b;
+    --muted-bg: #eef2f7;
+    --muted-text: #94a3b8;
+    --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.08);
+    --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.12);
+    --radius: 14px;
+  }
+
+  /* ===== リセット & ベース ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+    background:
+      radial-gradient(1200px 420px at 20% -10%, var(--bg-accent), transparent 60%),
+      radial-gradient(1000px 380px at 100% -10%, #edf5ff, transparent 55%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== ヘッダー ===== */
+  header {
+    background: #4a78d8;
+    color: #fff;
+    padding: 16px 20px 18px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    position: relative;
+  }
+  header h1 {
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+  }
+  header p  { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .header-actions {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .top-menu a,
+  .qr-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #fff;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0 11px;
+    min-width: 52px;
+    height: 30px;
+    line-height: normal;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.18);
+    transition: background 0.2s, transform 0.15s;
+  }
+  .top-menu a:hover,
+  .qr-btn:hover {
+    background: rgba(255,255,255,0.22);
+    transform: translateY(-1px);
+  }
+  .qr-btn {
+    position: static;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+    white-space: nowrap;
+  }
+
+  /* ===== QRモーダル ===== */
+  .qr-body { text-align: center; }
+  .qr-body img { display: block; margin: 0 auto 12px; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .qr-url {
+    font-size: 0.72rem; color: #718096;
+    word-break: break-all;
+    background: #f7fafc; border-radius: 4px;
+    padding: 8px 10px; margin-top: 4px; user-select: all;
+  }
+  .qr-note { font-size: 0.8rem; color: #4a5568; margin-bottom: 12px; }
+
+  /* ===== 印刷（QRコードのみ表示） ===== */
+  @media print {
+    body > *:not(#qrModal) { display: none !important; }
+    #qrModal {
+      display: flex !important;
+      background: none;
+      position: static;
+    }
+    #qrModal .modal { box-shadow: none; }
+    #qrModal .modal-buttons,
+    #qrModal #qrCloseBtn { display: none !important; }
+  }
+
+  /* ===== 日付ナビゲーション ===== */
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .date-nav button {
+    background: #2b6cb0;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .date-nav button:hover { background: #2c5282; }
+  .date-nav button:disabled { background: #a0aec0; cursor: default; }
+  #dateDisplay {
+    font-size: 1.1rem;
+    font-weight: bold;
+    min-width: 160px;
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid #2b6cb0;
+    padding-bottom: 2px;
+  }
+  #datePicker {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #monthPicker {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ===== メインコンテンツ ===== */
+  main {
+    max-width: 640px;
+    margin: 20px auto;
+    padding: 0 16px;
+  }
+
+  /* ===== 凡例 ===== */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-box {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+  .legend-box.available { background: #c6f6d5; }
+  .legend-box.booked    { background: #fed7d7; }
+
+  /* ===== 予約テーブル ===== */
+  .slot-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  }
+  .slot-table th {
+    background: #ebf4ff;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: #2c5282;
+    text-align: left;
+  }
+  .slot-table td {
+    padding: 10px 14px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+    vertical-align: middle;
+  }
+  .slot-table tr:hover td { background: #f7fafc; }
+
+  .time-label { font-weight: bold; color: #4a5568; white-space: nowrap; }
+
+  /* スロットセル */
+  .slot-cell {
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s;
+    user-select: none;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  .slot-cell:hover { filter: brightness(0.92); transform: scale(0.98); }
+  .slot-cell.available {
+    background: #c6f6d5;
+    color: #276749;
+    text-align: center;
+    font-weight: bold;
+  }
+  .slot-cell.booked {
+    background: #fed7d7;
+    color: #9b2c2c;
+  }
+  .slot-cell.past {
+    background: #edf2f7;
+    color: #a0aec0;
+    cursor: default;
+    text-align: center;
+  }
+  .slot-cell.past:hover { filter: none; transform: none; }
+
+  /* ローディング */
+  .loading-row td {
+    text-align: center;
+    padding: 30px;
+    color: #718096;
+    font-size: 0.9rem;
+  }
+
+  /* ===== モーダル共通 ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+  .modal-overlay.active {
+    display: flex;
+    opacity: 1;
+  }
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    transform: translateY(14px) scale(0.98);
+    opacity: 0;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+  .modal-overlay.active .modal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  .modal h2 {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    color: #2d3748;
+    border-bottom: 2px solid #ebf4ff;
+    padding-bottom: 8px;
+  }
+  .modal .slot-info {
+    background: #ebf4ff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #2c5282;
+    font-weight: bold;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #4a5568;
+    margin-bottom: 6px;
+  }
+  .form-group select,
+  .form-group input[type="text"],
+  .form-group input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .form-group select:focus,
+  .form-group input[type="text"]:focus,
+  .form-group input[type="password"]:focus {
+    outline: none;
+    border-color: #2b6cb0;
+    box-shadow: 0 0 0 2px rgba(43,108,176,0.2);
+  }
+  .time-options {
+    display: grid;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .time-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #cfd9ea;
+    border-radius: 10px;
+    background: #f8fbff;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+  .time-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
+  }
+  .time-option.disabled {
+    opacity: 0.6;
+    background: #f1f5f9;
+  }
+  .time-option small {
+    margin-left: auto;
+    color: #64748b;
+    font-size: 0.78rem;
+  }
+  .modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: bold;
+    transition: filter 0.15s;
+  }
+  .btn:hover { filter: brightness(0.9); }
+  .btn-primary { background: #2b6cb0; color: #fff; }
+  .btn-danger  { background: #e53e3e; color: #fff; }
+  .btn-cancel  { background: #e2e8f0; color: #4a5568; }
+
+  /* エラーメッセージ */
+  .error-msg {
+    color: #c53030;
+    font-size: 0.83rem;
+    margin-top: 6px;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  /* トースト通知 */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #2d3748;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    z-index: 200;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.success { background: #276749; }
+  #toast.error   { background: #9b2c2c; }
+
+  /* ===== 月間ビュー ===== */
+  .view-toggle-btn {
+    background: #edf2f7;
+    color: #4a5568;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.2s;
+    margin-left: 8px;
+  }
+  .view-toggle-btn:hover { background: #e2e8f0; }
+  .view-toggle-btn.active { background: #2b6cb0; color: #fff; border-color: #2b6cb0; }
+
+  .week-nav {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+    grid-template-columns: minmax(96px, auto) minmax(150px, 1fr) minmax(96px, auto);
+  }
+  .week-nav.active {
+    display: grid;
+    align-items: center;
+  }
+  .month-nav-btn {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 38px;
+    min-width: 84px;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+    transition: filter 0.15s, transform 0.12s;
+    width: 100%;
+  }
+  .month-nav-btn:hover { filter: brightness(1.04); transform: translateY(-1px); }
+  .month-nav-btn:disabled {
+    background: #a0aec0;
+    box-shadow: none;
+    cursor: default;
+    transform: none;
+    filter: none;
+  }
+
+  #weekRange {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #b8ccfb;
+    background: linear-gradient(180deg, #f6f9ff 0%, #eaf1ff 100%);
+    color: #1d4ed8;
+    border-radius: 12px;
+    padding: 8px 14px;
+    min-height: 38px;
+    min-width: 150px;
+    font-size: 0.96rem;
+    font-weight: 800;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.14);
+    transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+  }
+  #weekRange:hover {
+    background: linear-gradient(180deg, #f8fbff 0%, #e6f0ff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(30, 64, 175, 0.2);
+  }
+  #weekRange:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.35), 0 8px 18px rgba(30, 64, 175, 0.2);
+  }
+
+  .week-view-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  }
+  .week-table {
+    width: 100%;
+    min-width: 360px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #fff;
+  }
+  .week-table th {
+    background: #ebf4ff;
+    padding: 7px 4px;
+    font-size: 0.78rem;
+    color: #2c5282;
+    text-align: center;
+    border-right: 1px solid #e2e8f0;
+    white-space: nowrap;
+    line-height: 1.4;
+  }
+  .week-table th:first-child { width: 68px; }
+  .week-table th.today-col { background: #bee3f8; color: #1a365d; }
+  .week-table th.sat-col  { color: #2b6cb0; }
+  .week-table th.sun-col  { color: #c53030; }
+  .week-table th.holiday-col  { color: #c53030; }
+  .week-table td {
+    padding: 3px;
+    border-top: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
+    vertical-align: middle;
+  }
+  .week-table td.time-col {
+    font-weight: bold;
+    color: #4a5568;
+    text-align: center;
+    white-space: nowrap;
+    background: #f7fafc;
+    font-size: 0.72rem;
+    padding: 4px 3px;
+  }
+  .week-table td.today-col { background: #ebf8ff; }
+  .week-table td.sat-col { color: #2b6cb0; font-weight: bold; }
+  .week-table td.sun-col { color: #c53030; font-weight: bold; }
+  .week-table td.holiday-col { color: #c53030; font-weight: bold; }
+  .week-cell {
+    border-radius: 4px;
+    padding: 5px 3px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    transition: filter 0.15s;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-all;
+  }
+  .week-cell:hover { filter: brightness(0.9); }
+  .week-cell.available { background: #c6f6d5; color: #276749; font-weight: bold; }
+  .week-cell.booked    { background: #fed7d7; color: #9b2c2c; }
+  .week-cell.past      { background: #edf2f7; color: #a0aec0; cursor: default; }
+  .week-cell.past:hover { filter: none; }
+
+  /* ===== Modern Theme Overrides ===== */
+  header {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%);
+    box-shadow: var(--shadow-md);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+  header h1 {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  header p { opacity: 0.95; }
+
+  .qr-btn {
+    backdrop-filter: blur(6px);
+    border-radius: 999px;
+  }
+
+  .date-nav,
+  .week-nav {
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin: 14px auto 0;
+    max-width: 720px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .date-nav button,
+  #prevWeek,
+  #nextWeek {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+    font-weight: 700;
+  }
+  .date-nav button:hover,
+  #prevWeek:hover,
+  #nextWeek:hover {
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+  }
+
+  #dateDisplay {
+    border-bottom: 2px solid #93c5fd;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--surface-soft);
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #dateDisplay.sat { color: #2b6cb0; }
+  #dateDisplay.holiday,
+  #dateDisplay.sun {
+    color: #c53030;
+    border-bottom-color: #fca5a5;
+    background: #fff5f5;
+  }
+
+  main {
+    max-width: 760px;
+    margin: 24px auto;
+  }
+
+  .legend {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .slot-table,
+  .week-view-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+  }
+
+  .slot-table th,
+  .week-table th {
+    background: linear-gradient(180deg, #f5f9ff 0%, #edf4ff 100%);
+    color: #1e3a8a;
+    font-weight: 700;
+  }
+
+  .slot-table td,
+  .week-table td {
+    border-color: #e6ecf5;
+  }
+
+  .slot-cell,
+  .week-cell {
+    border-radius: 10px;
+    transition: transform 0.12s ease, filter 0.16s ease, box-shadow 0.16s ease;
+  }
+  .slot-cell.available,
+  .week-cell.available {
+    background: var(--ok-bg);
+    color: var(--ok-text);
+  }
+  .slot-cell.booked,
+  .week-cell.booked {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+  }
+  .slot-cell.past,
+  .week-cell.past {
+    background: var(--muted-bg);
+    color: var(--muted-text);
+  }
+  .slot-cell:hover,
+  .week-cell:hover {
+    box-shadow: 0 4px 10px rgba(30, 64, 175, 0.14);
+  }
+
+  .modal-overlay {
+    background: rgba(15, 23, 42, 0.44);
+    backdrop-filter: blur(4px);
+  }
+  .modal {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 22px 52px rgba(15, 23, 42, 0.24);
+    padding: 26px;
+    max-width: 420px;
+    background:
+      radial-gradient(140% 90% at 0% 0%, #f7fbff 0%, transparent 55%),
+      #ffffff;
+  }
+  .modal h2 {
+    color: #1e3a8a;
+    border-bottom-color: #dbeafe;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.18rem;
+    margin-bottom: 18px;
+  }
+  .modal .slot-info {
+    background: var(--primary-soft);
+    color: #1e40af;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    color: #334155;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+  }
+  .form-group select,
+  .form-group input[type="text"],
+  .form-group input[type="password"] {
+    border: 1px solid #cfd9ea;
+    border-radius: 12px;
+    background: #fdfefe;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+  .form-group select:focus,
+  .form-group input[type="text"]:focus,
+  .form-group input[type="password"]:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.22);
+  }
+
+  .btn {
+    border-radius: 12px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    min-height: 44px;
+    transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.16);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+  .btn-cancel {
+    background: #edf2f9;
+    color: #334155;
+    border: 1px solid #d8e2f0;
+  }
+
+  .modal-buttons {
+    margin-top: 22px;
+    gap: 12px;
+  }
+
+  .error-msg {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    color: #b91c1c;
+    font-weight: 600;
+  }
+
+  #toast {
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+  }
+
+  @media (max-width: 768px) {
+    header {
+      padding-bottom: 12px;
+    }
+    .header-actions {
+      position: static;
+      margin-top: 10px;
+      justify-content: center;
+    }
+  }
+
+  /* ===== レスポンシブ ===== */
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.1rem; }
+    .header-actions {
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .top-menu a,
+    .qr-btn {
+      min-width: 46px;
+      padding: 5px 9px;
+      font-size: 0.7rem;
+    }
+    .slot-table th, .slot-table td { padding: 8px 10px; }
+    .slot-cell { padding: 6px 8px; font-size: 0.8rem; }
+    .time-label { font-size: 0.82rem; }
+
+    .week-nav {
+      width: calc(100% - 20px);
+      padding: 10px;
+      gap: 8px;
+    }
+    .week-nav.active {
+      grid-template-columns: minmax(92px, 1fr) minmax(136px, 1.35fr) minmax(92px, 1fr);
+      align-items: center;
+    }
+
+    .month-nav-btn,
+    #prevWeek,
+    #nextWeek {
+      min-width: 0;
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      font-size: 0;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    #prevWeek::before,
+    #nextWeek::before {
+      display: inline-block;
+      font-size: 1.35rem;
+      line-height: 1;
+      font-weight: 800;
+      transform: translateY(-1px);
+    }
+    #prevWeek::before { content: '\2039'; }
+    #nextWeek::before { content: '\203A'; }
+
+    #weekRange {
+      min-width: 0;
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      font-size: 0.98rem;
+      line-height: 1;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .week-nav.active {
+      grid-template-columns: minmax(84px, 1fr) minmax(126px, 1.25fr) minmax(84px, 1fr);
+    }
+    .month-nav-btn,
+    #prevWeek,
+    #nextWeek,
+    #weekRange {
+      font-size: 0.88rem;
+      padding: 8px 7px;
+    }
+
+    #prevWeek,
+    #nextWeek {
+      font-size: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== ヘッダー ===== -->
+<header>
+  <h1>🌲 那須高原別荘村・繭の里 予約</h1>
+  <p id="todayLabel"></p>
+  <div class="header-actions">
+    <nav class="top-menu" aria-label="メニュー">
+      <a href="./rules.html">利用ルール</a>
+    </nav>
+    <button class="qr-btn" id="qrBtn">QR</button>
+  </div>
+</header>
+
+<!-- ===== 日付ナビゲーション ===== -->
+<div class="date-nav">
+  <button id="prevDay" title="前日">&#8249;</button>
+  <span id="dateDisplay" title="クリックして日付を選択"></span>
+  <input type="date" id="datePicker" tabindex="-1">
+  <button id="nextDay" title="翌日">&#8250;</button>
+  <button class="view-toggle-btn" id="viewToggle">月間表示</button>
+</div>
+
+<!-- ===== 月間ナビゲーション ===== -->
+<div class="week-nav" id="weekNav">
+  <button id="prevWeek" class="month-nav-btn">&#8249; 前月</button>
+  <button id="weekRange" type="button" title="クリックして月を選択"></button>
+  <input type="month" id="monthPicker" tabindex="-1">
+  <button id="nextWeek" class="month-nav-btn">次月 &#8250;</button>
+</div>
+
+<!-- ===== メインコンテンツ ===== -->
+<main>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-box available"></div>空き（クリックで予約）</div>
+    <div class="legend-item"><div class="legend-box booked"></div>予約済み（クリックでキャンセル）</div>
+  </div>
+
+  <!-- 日別ビュー -->
+  <div id="dayView">
+    <table class="slot-table" id="slotTable">
+      <thead>
+        <tr>
+          <th style="width:90px">時間帯</th>
+          <th>状態</th>
+        </tr>
+      </thead>
+      <tbody id="slotBody">
+        <tr class="loading-row"><td colspan="2">読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 月間ビュー -->
+  <div id="weekView" style="display:none">
+    <div class="week-view-wrap">
+      <table class="week-table">
+        <colgroup id="weekColgroup"></colgroup>
+        <thead id="weekHead"></thead>
+        <tbody id="weekBody">
+          <tr><td colspan="5" style="text-align:center;padding:20px;color:#718096">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- ===== 予約モーダル ===== -->
+<div class="modal-overlay" id="bookModal">
+  <div class="modal">
+    <h2>予約する</h2>
+    <div class="slot-info" id="bookSlotInfo"></div>
+    <div class="form-group">
+      <label>予約時間（複数選択可）</label>
+      <div id="bookTimeOptions" class="time-options"></div>
+      <div class="error-msg" id="bookTimeError">予約時間を1つ以上選択してください</div>
+    </div>
+    <div class="form-group">
+      <label for="bookRoom">参加人数</label>
+      <select id="bookRoom"></select>
+    </div>
+    <div class="form-group">
+      <label for="bookName">予約者の氏名</label>
+      <input type="text" id="bookName" placeholder="例: 山田 太郎" maxlength="20">
+      <div class="error-msg" id="bookNameError">予約者の氏名を入力してください</div>
+    </div>
+    <div class="form-group">
+      <label for="bookPurpose">主な利用目的</label>
+      <select id="bookPurpose">
+        <option value="周辺観光">周辺観光</option>
+        <option value="BBQ">BBQ</option>
+        <option value="テニスコート">テニスコート</option>
+        <option value="ゴルフ">ゴルフ</option>
+        <option value="静養の為">静養の為</option>
+        <option value="お客様接待">お客様接待</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="bookPassword">予約パスワード</label>
+      <input type="password" id="bookPassword" placeholder="4桁のパスワード" inputmode="numeric" maxlength="4">
+      <div class="error-msg" id="bookPasswordError">パスワードを入力してください</div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-cancel" id="bookCancelBtn">キャンセル</button>
+      <button class="btn btn-primary" id="bookSubmitBtn">予約する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== キャンセルモーダル ===== -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal">
+    <h2>予約をキャンセルする</h2>
+    <div class="slot-info" id="cancelSlotInfo"></div>
+    <div class="form-group">
+      <label>キャンセル時間（複数選択可）</label>
+      <div id="cancelTimeOptions" class="time-options"></div>
+    </div>
+    <div class="form-group">
+      <label for="cancelRoom">参加人数（本人確認）</label>
+      <select id="cancelRoom"></select>
+    </div>
+    <div class="form-group">
+      <label for="cancelName">予約者の氏名（本人確認）</label>
+      <input type="text" id="cancelName" placeholder="予約時の氏名" maxlength="20">
+    </div>
+    <div class="form-group">
+      <label for="cancelPassword">予約パスワード</label>
+      <input type="password" id="cancelPassword" placeholder="4桁のパスワード" inputmode="numeric" maxlength="4">
+    </div>
+    <div class="error-msg" id="cancelError">参加人数または予約者の氏名が一致しません</div>
+    <div class="modal-buttons">
+      <button class="btn btn-cancel" id="cancelCancelBtn">戻る</button>
+      <button class="btn btn-danger" id="cancelSubmitBtn">キャンセルする</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== QRコードモーダル ===== -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal">
+    <h2>QRコード</h2>
+    <div class="qr-body">
+      <p class="qr-note">このQRコードをスキャンして予約ページへアクセス</p>
+      <img id="qrImage" src="" alt="QRコード" width="200" height="200">
+      <div class="qr-url" id="qrUrl"></div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-cancel" id="qrCloseBtn">閉じる</button>
+      <button class="btn btn-primary" id="qrPrintBtn">印刷する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 日付選択フォールバックモーダル（モバイル用） ===== -->
+<div class="modal-overlay" id="fallbackPickerModal">
+  <div class="modal">
+    <h2 id="fallbackPickerTitle">日付を選択</h2>
+    <div class="form-group">
+      <label for="fallbackPickerInput" id="fallbackPickerLabel">日付</label>
+      <input type="date" id="fallbackPickerInput">
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-cancel" id="fallbackPickerCancelBtn">キャンセル</button>
+      <button class="btn btn-primary" id="fallbackPickerApplyBtn">適用する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== トースト ===== -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// ★ 設定項目 ★
+// ============================================================
+
+// GASウェブアプリのURL（デプロイ後に取得したURLを貼り付けてください）
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxUKy65AYQAUXTnI29LeH6yJYqtiT9Dd_FxZoE6I1Ykhnv1NqKDCYnlfcpD9S7_mmS6/exec';
+
+// 受付時間スロット（9:00〜12:00, 12:00〜21:00）
+const TIME_SLOTS = ['09:00', '12:00'];
+const SLOT_END_TIME = {
+  '09:00': '12:00',
+  '12:00': '21:00'
+};
+
+// 参加人数リスト（1〜6名）
+const ROOM_NUMBERS = ['1', '2', '3', '4', '5', '6'];
+const HOLIDAY_API_URL = 'https://holidays-jp.github.io/api/v1/date.json';
+
+// ============================================================
+// 状態管理
+// ============================================================
+let currentDate = toDateString(new Date());  // 'YYYY-MM-DD'
+let reservations = [];   // 現在日付の予約リスト
+let pendingSlot = null;  // 予約/キャンセル操作対象スロット
+let viewMode = 'month';  // 'day' or 'month'
+let currentMonthStr = getMonthStr(currentDate);  // 月間ビューの対象年月（'YYYY-MM'）
+let fallbackPickerMode = 'date'; // 'date' or 'month'
+let japaneseHolidaySet = null;
+let holidayLoadPromise = null;
+
+// ---- クライアントキャッシュ（3分TTL） ----
+const _cache = new Map();
+const CACHE_TTL = 3 * 60 * 1000;
+function getCached(date) {
+  const e = _cache.get(date);
+  return (e && Date.now() - e.ts < CACHE_TTL) ? e.data : null;
+}
+function setCache(date, data) { _cache.set(date, { data, ts: Date.now() }); }
+function invalidateCache(date) { _cache.delete(date); }
+
+// ============================================================
+// 初期化
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  initDateNav();
+  initWeekNav();
+  initModals();
+  populateRoomSelects();
+  updateDateDisplay();
+  setInitialViewMode();
+
+  const today = new Date();
+  document.getElementById('todayLabel').textContent =
+    `本日: ${formatDateJa(today)}`;
+});
+
+// ============================================================
+// 月間ビュー
+// ============================================================
+function getMonthStr(dateStr) {
+  return dateStr.slice(0, 7); // 'YYYY-MM'
+}
+
+function offsetMonth(monthStr, delta) {
+  const [y, m] = monthStr.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function getMonthDates(monthStr) {
+  const [y, m] = monthStr.split('-').map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const dates = [];
+  for (let day = 1; day <= daysInMonth; day++) {
+    dates.push(`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`);
+  }
+  return dates;
+}
+
+function initWeekNav() {
+  document.getElementById('viewToggle').addEventListener('click', toggleViewMode);
+  const monthPicker = document.getElementById('monthPicker');
+
+  document.getElementById('weekRange').addEventListener('click', () => {
+    openMonthPicker(monthPicker);
+  });
+
+  monthPicker.addEventListener('change', () => {
+    if (monthPicker.value) {
+      currentMonthStr = monthPicker.value;
+      const currentDay = parseDate(currentDate).getDate();
+      const [year, month] = currentMonthStr.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const day = String(Math.min(currentDay, daysInMonth)).padStart(2, '0');
+      currentDate = `${currentMonthStr}-${day}`;
+      updateDateDisplay();
+      updateMonthNav();
+      loadMonthReservations();
+    }
+    monthPicker.style.pointerEvents = 'none';
+  });
+
+  document.getElementById('prevWeek').addEventListener('click', () => {
+    currentMonthStr = offsetMonth(currentMonthStr, -1);
+    updateMonthNav();
+    loadMonthReservations();
+  });
+  document.getElementById('nextWeek').addEventListener('click', () => {
+    currentMonthStr = offsetMonth(currentMonthStr, 1);
+    updateMonthNav();
+    loadMonthReservations();
+  });
+}
+
+function toggleViewMode() {
+  if (viewMode === 'day') {
+    viewMode = 'month';
+    currentMonthStr = getMonthStr(currentDate);
+    document.getElementById('viewToggle').textContent = '日別表示';
+    document.getElementById('viewToggle').classList.add('active');
+    document.getElementById('dayView').style.display = 'none';
+    document.getElementById('weekView').style.display = 'block';
+    document.getElementById('weekNav').classList.add('active');
+    document.querySelector('.date-nav').style.display = 'none';
+    updateMonthNav();
+    loadMonthReservations();
+  } else {
+    viewMode = 'day';
+    document.getElementById('viewToggle').textContent = '月間表示';
+    document.getElementById('viewToggle').classList.remove('active');
+    document.getElementById('dayView').style.display = 'block';
+    document.getElementById('weekView').style.display = 'none';
+    document.getElementById('weekNav').classList.remove('active');
+    document.querySelector('.date-nav').style.display = 'flex';
+    loadReservations();
+  }
+}
+
+function setInitialViewMode() {
+  viewMode = 'month';
+  document.getElementById('viewToggle').textContent = '日別表示';
+  document.getElementById('viewToggle').classList.add('active');
+  document.getElementById('dayView').style.display = 'none';
+  document.getElementById('weekView').style.display = 'block';
+  document.getElementById('weekNav').classList.add('active');
+  document.querySelector('.date-nav').style.display = 'none';
+  updateMonthNav();
+  loadMonthReservations();
+}
+
+function updateMonthNav() {
+  const [y, m] = currentMonthStr.split('-').map(Number);
+  document.getElementById('weekRange').textContent = `${y}年${m}月`;
+  document.getElementById('monthPicker').value = currentMonthStr;
+
+  const maxMonthStr = offsetMonth(getMonthStr(toDateString(new Date())), 6);
+  document.getElementById('prevWeek').disabled = false;
+  document.getElementById('nextWeek').disabled = currentMonthStr >= maxMonthStr;
+}
+
+async function loadMonthReservations() {
+  await ensureJapaneseHolidaysLoaded();
+
+  const dates = getMonthDates(currentMonthStr);
+  const monthData = {};
+
+  // 全日付がキャッシュ済みなら即表示
+  let allCached = true;
+  for (const d of dates) {
+    const cached = getCached(d);
+    if (cached) { monthData[d] = cached; } else { allCached = false; }
+  }
+  if (allCached) { renderMonthSlots(monthData); return; }
+
+  document.getElementById('weekBody').innerHTML =
+    '<tr><td colspan="5" style="text-align:center;padding:20px;color:#718096">読み込み中...</td></tr>';
+
+  if (!isGasUrlConfigured()) { renderMonthSlots(monthData); return; }
+
+  try {
+    // 月全体を1リクエストで一括取得（31リクエスト → 1リクエスト）
+    const startDate = dates[0];
+    const endDate   = dates[dates.length - 1];
+    const res  = await fetch(`${GAS_URL}?startDate=${startDate}&endDate=${endDate}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    // 日付ごとに振り分けてキャッシュ保存
+    const byDate = {};
+    for (const d of dates) byDate[d] = [];
+    for (const r of normalizeReservations(json.reservations || [])) {
+      if (byDate[r.date]) byDate[r.date].push(r);
+    }
+    for (const [d, list] of Object.entries(byDate)) {
+      setCache(d, list);
+      monthData[d] = list;
+    }
+  } catch (err) {
+    console.error('月間データの取得に失敗:', err);
+    showToast('データの取得に失敗しました。', 'error');
+  }
+
+  renderMonthSlots(monthData);
+}
+
+function renderMonthSlots(monthData) {
+  const dates    = getMonthDates(currentMonthStr);
+  const now      = new Date();
+  const todayStr = toDateString(now);
+  const curHour  = now.getHours();
+  const dayNames = ['日','月','火','水','木','金','土'];
+
+  // 列幅を固定して、2つの時間帯カラムを常に同じ幅で表示する
+  const colgroup = document.getElementById('weekColgroup');
+  if (colgroup) {
+    colgroup.innerHTML = '<col style="width:86px">' + TIME_SLOTS.map(() => '<col>').join('');
+  }
+
+  // ヘッダー（日付列 + 時間帯列）
+  const thead = document.getElementById('weekHead');
+  let hHtml = '<tr><th>日付</th>';
+  for (const ts of TIME_SLOTS) {
+    hHtml += `<th>${formatTimeRange(ts)}</th>`;
+  }
+  thead.innerHTML = hHtml + '</tr>';
+
+  // ボディ（1行 = 1日）
+  const tbody = document.getElementById('weekBody');
+  tbody.innerHTML = '';
+
+  for (const dateStr of dates) {
+    const d          = parseDate(dateStr);
+    const dow        = d.getDay(); // 0=日, 6=土
+    const isToday    = dateStr === todayStr;
+    const isPastDay  = dateStr < todayStr;
+    const dayReservations = monthData[dateStr] || [];
+
+    const tr = document.createElement('tr');
+
+    // 日付列
+    const tdDate = document.createElement('td');
+    tdDate.className = 'time-col';
+    if (isToday)  tdDate.classList.add('today-col');
+    if (dow === 6) tdDate.classList.add('sat-col');
+    if (dow === 0) tdDate.classList.add('sun-col');
+    if (isJapaneseHoliday(dateStr)) tdDate.classList.add('holiday-col');
+    tdDate.textContent = `${d.getDate()}日(${dayNames[dow]})`;
+    tr.appendChild(tdDate);
+
+    // 時間帯列
+    for (const timeSlot of TIME_SLOTS) {
+      const hour    = parseInt(timeSlot.split(':')[0], 10);
+      const isPast  = isPastDay || (isToday && hour < curHour);
+      const reservation = dayReservations.find(r => r.startTime === timeSlot);
+
+      const td = document.createElement('td');
+      if (isToday) td.classList.add('today-col');
+
+      const div = document.createElement('div');
+      div.className = 'week-cell';
+
+      if (isPast) {
+        div.classList.add('past');
+        div.textContent = reservation ? `${reservation.participants}名` : '―';
+      } else if (reservation) {
+        div.classList.add('booked');
+        div.innerHTML = `<span>${reservation.participants}名<br>${escapeHtml(reservation.name)}</span>`;
+        const _d = dateStr, _r = reservation, _t = timeSlot;
+        div.addEventListener('click', () => { currentDate = _d; openCancelModal(_r, _t); });
+      } else {
+        div.classList.add('available');
+        div.textContent = '空き';
+        const _d = dateStr, _t = timeSlot;
+        div.addEventListener('click', () => { currentDate = _d; openBookModal(_t); });
+      }
+
+      td.appendChild(div);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+}
+
+// ============================================================
+// 日付ナビゲーション
+// ============================================================
+function initDateNav() {
+  document.getElementById('prevDay').addEventListener('click', () => {
+    currentDate = offsetDate(currentDate, -1);
+    updateDateDisplay();
+    loadReservations();
+  });
+  document.getElementById('nextDay').addEventListener('click', () => {
+    currentDate = offsetDate(currentDate, 1);
+    updateDateDisplay();
+    loadReservations();
+  });
+
+  const picker = document.getElementById('datePicker');
+  document.getElementById('dateDisplay').addEventListener('click', () => {
+    openDatePicker(picker);
+  });
+  picker.addEventListener('change', () => {
+    if (picker.value) {
+      currentDate = picker.value;
+      updateDateDisplay();
+      loadReservations();
+    }
+    picker.style.pointerEvents = 'none';
+  });
+}
+
+function openDatePicker(inputEl) {
+  if (shouldUseFallbackPicker('date')) {
+    openFallbackPicker('date', currentDate);
+    return;
+  }
+  openNativePicker(inputEl, currentDate);
+}
+
+function openMonthPicker(inputEl) {
+  if (shouldUseFallbackPicker('month')) {
+    openFallbackPicker('month', currentMonthStr);
+    return;
+  }
+  openNativePicker(inputEl, currentMonthStr);
+}
+
+function shouldUseFallbackPicker(mode) {
+  const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+  if (!isTouch) return false;
+  if (mode === 'month' && !isMonthInputSupported()) return true;
+  // モバイルではプログラム起動のネイティブピッカーがブロックされるケースがあるため常にフォールバック
+  return true;
+}
+
+function isMonthInputSupported() {
+  const el = document.createElement('input');
+  el.setAttribute('type', 'month');
+  return el.type === 'month';
+}
+
+function openFallbackPicker(mode, value) {
+  fallbackPickerMode = mode;
+  const modal = document.getElementById('fallbackPickerModal');
+  const title = document.getElementById('fallbackPickerTitle');
+  const label = document.getElementById('fallbackPickerLabel');
+  const input = document.getElementById('fallbackPickerInput');
+
+  if (mode === 'month') {
+    title.textContent = '月を選択';
+    label.textContent = '対象月';
+    input.type = 'date';
+    input.value = `${value}-01`;
+  } else {
+    title.textContent = '日付を選択';
+    label.textContent = '対象日';
+    input.type = 'date';
+    input.value = value;
+  }
+
+  modal.classList.add('active');
+  setTimeout(() => input.focus({ preventScroll: true }), 0);
+}
+
+function applyFallbackPicker() {
+  const input = document.getElementById('fallbackPickerInput');
+  const val = input.value;
+  if (!val) {
+    showToast('日付を選択してください', 'error');
+    return;
+  }
+
+  if (fallbackPickerMode === 'month') {
+    const monthStr = val.slice(0, 7);
+    currentMonthStr = monthStr;
+    const currentDay = parseDate(currentDate).getDate();
+    const [year, month] = monthStr.split('-').map(Number);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const day = String(Math.min(currentDay, daysInMonth)).padStart(2, '0');
+    currentDate = `${monthStr}-${day}`;
+    updateDateDisplay();
+    updateMonthNav();
+    loadMonthReservations();
+  } else {
+    currentDate = val;
+    updateDateDisplay();
+    loadReservations();
+  }
+
+  closeModal('fallbackPickerModal');
+}
+
+function openNativePicker(inputEl, value) {
+  if (value) inputEl.value = value;
+  inputEl.style.pointerEvents = 'auto';
+
+  try {
+    if (typeof inputEl.showPicker === 'function') {
+      inputEl.showPicker();
+      return;
+    }
+  } catch (err) {
+    // showPicker未対応/制限時はclickへフォールバック
+  }
+
+  inputEl.focus({ preventScroll: true });
+  inputEl.click();
+}
+
+function updateDateDisplay() {
+  const d = parseDate(currentDate);
+  const dateDisplay = document.getElementById('dateDisplay');
+  dateDisplay.textContent = formatDateJa(d);
+  dateDisplay.classList.remove('sat', 'sun', 'holiday');
+  const dow = d.getDay();
+  if (dow === 6) dateDisplay.classList.add('sat');
+  if (dow === 0) dateDisplay.classList.add('sun');
+  if (isJapaneseHoliday(currentDate)) dateDisplay.classList.add('holiday');
+  document.getElementById('datePicker').value = currentDate;
+
+  // 過去日は前日ボタンを有効のまま（過去の確認も許可）
+  // 今日より30日先は制限
+  const todayStr = toDateString(new Date());
+  const maxDate = offsetDate(todayStr, 30);
+  document.getElementById('nextDay').disabled = currentDate >= maxDate;
+}
+
+// ============================================================
+// 予約データ読み込み
+// ============================================================
+async function loadReservations() {
+  // キャッシュヒット時はスキップ
+  const cached = getCached(currentDate);
+  if (cached) {
+    reservations = cached;
+    renderSlots(reservations);
+    return;
+  }
+
+  const tbody = document.getElementById('slotBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="2">読み込み中...</td></tr>';
+
+  if (!isGasUrlConfigured()) {
+    renderSlots([]);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${GAS_URL}?date=${currentDate}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    reservations = normalizeReservations(json.reservations || []);
+    setCache(currentDate, reservations);
+  } catch (err) {
+    console.error('予約データの取得に失敗:', err);
+    showToast('データの取得に失敗しました。GAS URLを確認してください。', 'error');
+    reservations = [];
+  }
+
+  renderSlots(reservations);
+}
+
+// ============================================================
+// スロット描画
+// ============================================================
+function renderSlots(reservations) {
+  const tbody = document.getElementById('slotBody');
+  tbody.innerHTML = '';
+
+  const now = new Date();
+  const todayStr = toDateString(now);
+  const currentHour = now.getHours();
+
+  for (const timeSlot of TIME_SLOTS) {
+    const hour = parseInt(timeSlot.split(':')[0], 10);
+    const isPast = currentDate < todayStr ||
+                   (currentDate === todayStr && hour < currentHour);
+
+    const reservation = reservations.find(r => r.startTime === timeSlot);
+
+    const tr = document.createElement('tr');
+
+    // 時間列
+    const tdTime = document.createElement('td');
+    tdTime.className = 'time-label';
+    tdTime.textContent = formatTimeRange(timeSlot);
+    tr.appendChild(tdTime);
+
+    // スロット列
+    const tdSlot = document.createElement('td');
+    const div = document.createElement('div');
+    div.className = 'slot-cell';
+
+    if (isPast) {
+      div.classList.add('past');
+      div.textContent = reservation
+        ? `${reservation.participants}名 ${reservation.name}`
+        : '―';
+    } else if (reservation) {
+      div.classList.add('booked');
+      div.innerHTML = `<strong>${reservation.participants}名</strong> ${escapeHtml(reservation.name)}<br>
+                       <small style="opacity:0.75">${escapeHtml(reservation.purpose || '')}</small><br>
+                       <small style="opacity:0.75">クリックでキャンセル</small>`;
+      div.addEventListener('click', () => openCancelModal(reservation, timeSlot));
+    } else {
+      div.classList.add('available');
+      div.textContent = '空き';
+      div.addEventListener('click', () => openBookModal(timeSlot));
+    }
+
+    tdSlot.appendChild(div);
+    tr.appendChild(tdSlot);
+    tbody.appendChild(tr);
+  }
+}
+
+// ============================================================
+// 予約モーダル
+// ============================================================
+function openBookModal(timeSlot) {
+  pendingSlot = { timeSlot };
+  const d = parseDate(currentDate);
+  document.getElementById('bookSlotInfo').textContent =
+    `${formatDateJa(d)} の予約時間を選択してください`;
+  renderBookTimeOptions(timeSlot);
+  document.getElementById('bookName').value = '';
+  document.getElementById('bookPurpose').value = '周辺観光';
+  document.getElementById('bookPassword').value = '';
+  document.getElementById('bookTimeError').classList.remove('visible');
+  document.getElementById('bookNameError').classList.remove('visible');
+  document.getElementById('bookPasswordError').classList.remove('visible');
+  document.getElementById('bookModal').classList.add('active');
+  document.getElementById('bookName').focus();
+}
+
+async function submitBooking() {
+  const startTimes = getSelectedCheckboxValues('bookTimeOptions', 'bookTime');
+  const participants = document.getElementById('bookRoom').value;
+  const name = document.getElementById('bookName').value.trim();
+  const purpose = document.getElementById('bookPurpose').value;
+  const password = document.getElementById('bookPassword').value.trim();
+
+  if (startTimes.length === 0) {
+    document.getElementById('bookTimeError').classList.add('visible');
+    return;
+  }
+  document.getElementById('bookTimeError').classList.remove('visible');
+
+  if (!name) {
+    document.getElementById('bookNameError').classList.add('visible');
+    return;
+  }
+  document.getElementById('bookNameError').classList.remove('visible');
+
+  if (!password) {
+    document.getElementById('bookPasswordError').classList.add('visible');
+    return;
+  }
+  document.getElementById('bookPasswordError').classList.remove('visible');
+
+  document.getElementById('bookSubmitBtn').disabled = true;
+  document.getElementById('bookSubmitBtn').textContent = '送信中...';
+
+  try {
+    if (!isGasUrlConfigured()) {
+      throw new Error('GAS URLが設定されていません。index.html の GAS_URL を設定してください。');
+    }
+
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'add',
+        date: currentDate,
+        startTimes,
+        participants,
+        name,
+        purpose,
+        password
+      })
+    });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    // 再取得せず、レスポンスをそのままローカル反映
+    const addedList = normalizeReservations(
+      (json.reservations && json.reservations.length ? json.reservations : [json.reservation]).filter(Boolean)
+    );
+
+    const fallbackAddedList = addedList.length > 0 ? addedList : normalizeReservations(startTimes.map((slot, idx) => ({
+      id: `local-${Date.now()}-${idx}`,
+      date: currentDate,
+      startTime: slot,
+      participants,
+      name,
+      purpose,
+      createdAt: new Date().toISOString()
+    })));
+
+    const dayList = (getCached(currentDate) || []).filter(r => startTimes.indexOf(r.startTime) === -1);
+    fallbackAddedList.forEach(r => dayList.push(r));
+    setCache(currentDate, dayList);
+
+    closeModal('bookModal');
+    showToast(`予約が完了しました（${fallbackAddedList.length}件）`, 'success');
+    refreshView();
+  } catch (err) {
+    showToast(err.message || '予約に失敗しました', 'error');
+  } finally {
+    document.getElementById('bookSubmitBtn').disabled = false;
+    document.getElementById('bookSubmitBtn').textContent = '予約する';
+  }
+}
+
+// ============================================================
+// キャンセルモーダル
+// ============================================================
+function openCancelModal(reservation, timeSlot) {
+  pendingSlot = { reservation, timeSlot };
+  const d = parseDate(currentDate);
+  const targetReservations = getCancelableReservationsForCurrentDate(reservation);
+  renderCancelTimeOptions(targetReservations, reservation && reservation.id);
+  document.getElementById('cancelSlotInfo').innerHTML =
+    `${formatDateJa(d)}<br>` +
+    `<strong>${reservation.participants}名</strong> ${escapeHtml(reservation.name)}<br>` +
+    `<small>${escapeHtml(reservation.purpose || '')}</small>`;
+  document.getElementById('cancelName').value = '';
+  document.getElementById('cancelPassword').value = '';
+  document.getElementById('cancelError').classList.remove('visible');
+  document.getElementById('cancelModal').classList.add('active');
+}
+
+async function submitCancel() {
+  const ids = getSelectedCheckboxValues('cancelTimeOptions', 'cancelTime');
+  const participants = document.getElementById('cancelRoom').value;
+  const name = document.getElementById('cancelName').value.trim();
+  const password = document.getElementById('cancelPassword').value.trim();
+
+  if (ids.length === 0) {
+    document.getElementById('cancelError').textContent = 'キャンセル時間を1つ以上選択してください';
+    document.getElementById('cancelError').classList.add('visible');
+    return;
+  }
+
+  if (!name) {
+    document.getElementById('cancelError').textContent = '予約者の氏名を入力してください';
+    document.getElementById('cancelError').classList.add('visible');
+    return;
+  }
+
+  if (!password) {
+    document.getElementById('cancelError').textContent = '予約パスワードを入力してください';
+    document.getElementById('cancelError').classList.add('visible');
+    return;
+  }
+
+  document.getElementById('cancelSubmitBtn').disabled = true;
+  document.getElementById('cancelSubmitBtn').textContent = '処理中...';
+
+  try {
+    if (!isGasUrlConfigured()) {
+      throw new Error('GAS URLが設定されていません');
+    }
+
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'cancel',
+        ids,
+        participants,
+        name,
+        password
+      })
+    });
+    const json = await res.json();
+    if (json.error) {
+      document.getElementById('cancelError').textContent = json.error;
+      document.getElementById('cancelError').classList.add('visible');
+      return;
+    }
+
+    // 再取得せず、ローカルキャッシュから対象予約を除外
+    const dayList = getCached(currentDate) || [];
+    const filtered = dayList.filter(r => ids.indexOf(String(r.id)) === -1);
+    setCache(currentDate, filtered);
+
+    closeModal('cancelModal');
+    showToast(`キャンセルしました（${ids.length}件）`, 'success');
+    refreshView();
+  } catch (err) {
+    document.getElementById('cancelError').textContent = err.message || 'キャンセルに失敗しました';
+    document.getElementById('cancelError').classList.add('visible');
+  } finally {
+    document.getElementById('cancelSubmitBtn').disabled = false;
+    document.getElementById('cancelSubmitBtn').textContent = 'キャンセルする';
+  }
+}
+
+// ============================================================
+// モーダル共通
+// ============================================================
+function initModals() {
+  document.getElementById('bookCancelBtn').addEventListener('click', () => closeModal('bookModal'));
+  document.getElementById('bookSubmitBtn').addEventListener('click', submitBooking);
+  document.getElementById('cancelCancelBtn').addEventListener('click', () => closeModal('cancelModal'));
+  document.getElementById('cancelSubmitBtn').addEventListener('click', submitCancel);
+
+  // Enterキーで送信
+  document.getElementById('bookName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitBooking();
+  });
+  document.getElementById('bookPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitBooking();
+  });
+  document.getElementById('cancelName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitCancel();
+  });
+  document.getElementById('cancelPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitCancel();
+  });
+
+  // オーバーレイクリックで閉じる
+  document.getElementById('bookModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('bookModal')) closeModal('bookModal');
+  });
+  document.getElementById('cancelModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('cancelModal')) closeModal('cancelModal');
+  });
+
+  // QRコードモーダル
+  document.getElementById('qrBtn').addEventListener('click', openQrModal);
+  document.getElementById('qrCloseBtn').addEventListener('click', () => closeModal('qrModal'));
+  document.getElementById('qrPrintBtn').addEventListener('click', () => window.print());
+  document.getElementById('qrModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('qrModal')) closeModal('qrModal');
+  });
+
+  // モバイル向け日付選択モーダル
+  document.getElementById('fallbackPickerCancelBtn').addEventListener('click', () => closeModal('fallbackPickerModal'));
+  document.getElementById('fallbackPickerApplyBtn').addEventListener('click', applyFallbackPicker);
+  document.getElementById('fallbackPickerInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') applyFallbackPicker();
+  });
+  document.getElementById('fallbackPickerModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('fallbackPickerModal')) closeModal('fallbackPickerModal');
+  });
+}
+
+function openQrModal() {
+  const url = window.location.href.split('?')[0]; // クエリパラメータを除いたURL
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(url)}`;
+  document.getElementById('qrImage').src = qrApiUrl;
+  document.getElementById('qrUrl').textContent = url;
+  document.getElementById('qrModal').classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  pendingSlot = null;
+}
+
+// ============================================================
+// 参加人数セレクトを初期化
+// ============================================================
+function populateRoomSelects() {
+  ['bookRoom', 'cancelRoom'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    for (const room of ROOM_NUMBERS) {
+      const opt = document.createElement('option');
+      opt.value = room;
+      opt.textContent = `${room}名`;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+// ============================================================
+// トースト通知
+// ============================================================
+let toastTimer = null;
+function showToast(msg, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = type ? `show ${type}` : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.className = ''; }, 3000);
+}
+
+// ============================================================
+// ユーティリティ
+// ============================================================
+function toDateString(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function parseDate(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function offsetDate(dateStr, days) {
+  const d = parseDate(dateStr);
+  d.setDate(d.getDate() + days);
+  return toDateString(d);
+}
+
+function formatDateJa(date) {
+  const days = ['日','月','火','水','木','金','土'];
+  return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日（${days[date.getDay()]}）`;
+}
+
+function getSlotEndTime(startTime) {
+  return SLOT_END_TIME[startTime] || startTime;
+}
+
+function formatDisplayTime(timeStr) {
+  const parts = String(timeStr).split(':');
+  const hour = String(parseInt(parts[0], 10));
+  const minute = parts[1] || '00';
+  return `${hour}:${minute}`;
+}
+
+function formatTimeRange(startTime) {
+  return `${formatDisplayTime(startTime)}~${formatDisplayTime(getSlotEndTime(startTime))}`;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function normalizeReservations(list) {
+  return (list || []).map(r => {
+    if (!r) return r;
+    if (r.date) {
+      const ds = String(r.date).trim().replace(/\//g, '-');
+      const md = ds.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (md) r.date = md[1];
+    }
+    // 古いAPIや別実装で 'time' を返す場合に対応
+    if (r.time && !r.startTime) r.startTime = r.time;
+    if (r.startTime && /^\d{1,2}:\d{2}:\d{2}$/.test(r.startTime)) {
+      r.startTime = r.startTime.slice(0, 5);
+    }
+    // '9' や '9:0' のような形式に対する補正
+    if (r.startTime && /^\d{1,2}$/.test(r.startTime)) r.startTime = r.startTime.padStart(2,'0') + ':00';
+    if (r.startTime && /^\d{1}:\d{1}$/.test(r.startTime)) {
+      const parts = r.startTime.split(':');
+      r.startTime = parts[0].padStart(2,'0') + ':' + parts[1].padStart(2,'0');
+    }
+    if (r.startTime && /^\d{1}:\d{2}$/.test(r.startTime)) {
+      const parts = r.startTime.split(':');
+      r.startTime = parts[0].padStart(2,'0') + ':' + parts[1];
+    }
+    if (r.participants == null && r.roomNumber != null) r.participants = r.roomNumber;
+    if (r.participants != null) r.participants = String(r.participants);
+    if (!r.purpose) r.purpose = '';
+    return r;
+  });
+}
+
+function getSelectedCheckboxValues(containerId, nameAttr) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  return Array.from(container.querySelectorAll(`input[name="${nameAttr}"]:checked`)).map(el => el.value);
+}
+
+function isPastSlot(dateStr, startTime) {
+  const now = new Date();
+  const todayStr = toDateString(now);
+  if (dateStr < todayStr) return true;
+  if (dateStr > todayStr) return false;
+  const hour = parseInt(String(startTime).split(':')[0], 10);
+  return hour < now.getHours();
+}
+
+function getReservationsForDate(dateStr) {
+  const cached = getCached(dateStr);
+  if (cached) return cached;
+  if (dateStr === currentDate && Array.isArray(reservations)) return reservations;
+  return [];
+}
+
+function renderBookTimeOptions(preferredTime) {
+  const container = document.getElementById('bookTimeOptions');
+  if (!container) return;
+  const list = getReservationsForDate(currentDate);
+  const reservedMap = new Map(list.map(r => [String(r.startTime), r]));
+  const items = [];
+  let checkedCount = 0;
+
+  TIME_SLOTS.forEach(ts => {
+    const reserved = reservedMap.get(ts);
+    const past = isPastSlot(currentDate, ts);
+    const selectable = !reserved && !past;
+    const checked = selectable && (ts === preferredTime || (!preferredTime && checkedCount === 0));
+    if (checked) checkedCount++;
+    const status = reserved ? `${escapeHtml(reserved.participants)}名 ${escapeHtml(reserved.name)} 予約済み` : (past ? '受付終了' : '選択可');
+    items.push({
+      ts,
+      selectable,
+      checked,
+      status
+    });
+  });
+
+  if (checkedCount === 0) {
+    const firstSelectable = items.find(item => item.selectable);
+    if (firstSelectable) {
+      firstSelectable.checked = true;
+    }
+  }
+
+  container.innerHTML = items.map(item =>
+    `<label class="time-option${item.selectable ? '' : ' disabled'}">` +
+    `<input type="checkbox" name="bookTime" value="${escapeHtml(item.ts)}" ${item.checked ? 'checked' : ''} ${item.selectable ? '' : 'disabled'}>` +
+    `<span>${formatTimeRange(item.ts)}</span>` +
+    `<small>${item.status}</small>` +
+    `</label>`
+  ).join('');
+}
+
+function getCancelableReservationsForCurrentDate(clickedReservation) {
+  const list = (getReservationsForDate(currentDate) || []).slice();
+  if (list.length > 0) return list;
+  return clickedReservation ? [clickedReservation] : [];
+}
+
+function renderCancelTimeOptions(reservationList, selectedId) {
+  const container = document.getElementById('cancelTimeOptions');
+  if (!container) return;
+  const list = (reservationList || []).slice().sort((a, b) => String(a.startTime).localeCompare(String(b.startTime)));
+  if (list.length === 0) {
+    container.innerHTML = '<div class="time-option disabled">対象の予約がありません</div>';
+    return;
+  }
+  container.innerHTML = list.map(r => {
+    const checked = String(r.id) === String(selectedId) ? 'checked' : '';
+    return `<label class="time-option">` +
+      `<input type="checkbox" name="cancelTime" value="${escapeHtml(String(r.id))}" ${checked}>` +
+      `<span>${formatTimeRange(r.startTime)}</span>` +
+      `<small>${escapeHtml(r.purpose || '')}</small>` +
+      `</label>`;
+  }).join('');
+}
+
+function isGasUrlConfigured() {
+  return Boolean(GAS_URL);
+}
+
+async function ensureJapaneseHolidaysLoaded() {
+  if (japaneseHolidaySet) return;
+  if (holidayLoadPromise) {
+    await holidayLoadPromise;
+    return;
+  }
+
+  holidayLoadPromise = fetch(HOLIDAY_API_URL)
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      japaneseHolidaySet = new Set(Object.keys(data || {}));
+    })
+    .catch(err => {
+      console.warn('祝日データの取得に失敗しました:', err);
+      japaneseHolidaySet = new Set();
+    })
+    .finally(() => {
+      holidayLoadPromise = null;
+    });
+
+  await holidayLoadPromise;
+}
+
+function isJapaneseHoliday(dateStr) {
+  return japaneseHolidaySet ? japaneseHolidaySet.has(dateStr) : false;
+}
+
+async function reloadDateCache(dateStr) {
+  if (!isGasUrlConfigured()) return;
+  const res = await fetch(`${GAS_URL}?date=${dateStr}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  setCache(dateStr, normalizeReservations(json.reservations || []));
+}
+
+async function refreshAfterMutation() {
+  invalidateCache(currentDate);
+  if (viewMode === 'month') {
+    await loadMonthReservations();
+    return;
+  }
+  await loadReservations();
+}
+
+// キャッシュの現在の内容でビューを即時再描画（GASリクエスト不要）
+function refreshView() {
+  if (viewMode === 'month') {
+    currentMonthStr = getMonthStr(currentDate);
+    updateMonthNav();
+    const dates = getMonthDates(currentMonthStr);
+    const monthData = {};
+    for (const d of dates) {
+      const cached = getCached(d);
+      if (cached) monthData[d] = cached;
+    }
+    renderMonthSlots(monthData);
+  } else {
+    reservations = getCached(currentDate) || [];
+    renderSlots(reservations);
+  }
+}
+</script>
+</body>
+</html>

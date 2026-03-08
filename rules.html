@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>利用ルール | 那須高原別荘村 繭の里</title>
+<style>
+  :root {
+    --bg: #f2f6fc;
+    --surface: #ffffff;
+    --text: #1f2937;
+    --sub: #4b5563;
+    --border: #d8e3f2;
+    --primary: #1d4ed8;
+    --primary-dark: #1e3a8a;
+    --chip: #eef4ff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1100px 420px at 10% -10%, #e7efff, transparent 62%),
+      radial-gradient(900px 360px at 95% -10%, #edf5ff, transparent 58%),
+      var(--bg);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%);
+    color: #fff;
+    text-align: center;
+    width: 100%;
+    max-width: none;
+    padding: 16px 20px 18px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    position: relative;
+  }
+  header h1 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  header p {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-top: 4px;
+    min-height: 1.2em;
+  }
+  .header-sub {
+    visibility: hidden;
+  }
+  .header-actions {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 0.74rem;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.44);
+    background: rgba(255,255,255,0.16);
+    padding: 0 11px;
+    min-width: 52px;
+    height: 30px;
+    line-height: normal;
+    border-radius: 999px;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .header-actions a:hover {
+    background: rgba(255,255,255,0.22);
+    transform: translateY(-1px);
+  }
+
+  main {
+    max-width: 900px;
+    margin: 22px auto;
+    padding: 0 14px 28px;
+  }
+
+  .notice {
+    background: #fffdf0;
+    border: 1px solid #f8e6b8;
+    color: #7c5e10;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.86rem;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .section h2 {
+    color: var(--text);
+    font-size: 1.03rem;
+    margin-bottom: 10px;
+    border-left: none;
+    padding-left: 0;
+  }
+  .section h3 {
+    color: var(--text);
+    font-size: 0.95rem;
+    margin: 14px 0 8px;
+  }
+  .section p {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.75;
+    margin-bottom: 8px;
+  }
+  .section ul {
+    list-style: none;
+    display: grid;
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+  .section li {
+    position: relative;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.6;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0 4px 16px;
+  }
+  .section li::before {
+    content: '・';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .location-link {
+    display: inline-block;
+    margin-top: 3px;
+    color: var(--primary);
+    font-weight: 400;
+    text-decoration: underline;
+  }
+
+  .purpose-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  @media (max-width: 640px) {
+    .purpose-list {
+      grid-template-columns: 1fr;
+    }
+    .section {
+      padding: 14px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    header {
+      padding-bottom: 12px;
+    }
+    .header-actions {
+      position: static;
+      margin-top: 10px;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-actions {
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .header-actions a {
+      min-width: 46px;
+      min-height: 30px;
+      padding: 5px 9px;
+      font-size: 0.7rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>那須塩原（施設）の利用ルール</h1>
+  <p class="header-sub">.</p>
+  <div class="header-actions">
+    <a href="./index.html">予約トップへ戻る</a>
+  </div>
+</header>
+
+<main>
+  <div class="notice">
+    予約し確定した時点で、利用者全員が以下内容に承諾したものとみなします。
+  </div>
+
+  <section class="section">
+    <h2>1. 那須高原別荘村 繭の里</h2>
+    <p>施設名: 那須高原別荘村 繭の里</p>
+  </section>
+
+  <section class="section">
+    <h2>2. 場所</h2>
+    <p>〒325-0303 栃木県那須郡那須町大字高久乙字伊藤台3372-201</p>
+    <a class="location-link" href="https://www.mayunosato.com/" target="_blank" rel="noopener noreferrer">https://www.mayunosato.com/</a>
+  </section>
+
+  <section class="section">
+    <h2>3. 予約</h2>
+    <p>接待などで会社が利用するときは会社利用を優先し、直前でもキャンセルとさせていただきます。</p>
+  </section>
+
+  <section class="section">
+    <h2>4. 鍵の受け渡し・鍵の返却方法</h2>
+    <ul>
+      <li>事前に担当者（村田、李）に連絡し、日時を決定して受け渡しを行ってください。</li>
+      <li>鍵を紛失したときは、至急担当者（村田、李）にメール、Teams等で連絡してください。</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>5. 備品</h2>
+    <p>テレビ・エアコン・暖房・炊飯器・ガスコンロ・冷蔵庫・包丁・まな板・調理器具・食器類・BBQ道具・寝具・シーツ・枕カバー・ごみ袋・食器洗剤・スポンジ</p>
+    <ul>
+      <li>必ず綺麗に洗ってから利用すること。</li>
+      <li>消耗品（ごみ袋・食器洗剤・スポンジ）が不足していた場合は近隣店舗で購入し、精算してください。</li>
+      <li>寝具・シーツ・枕カバーの取り扱いについては要検討（洗うタイミング）。</li>
+    </ul>
+    <h3>各自ご準備いただくもの</h3>
+    <ul>
+      <li>タオル類</li>
+      <li>洗面用具（歯ブラシなど）</li>
+      <li>パジャマ</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>6. 別荘の利用</h2>
+    <ul>
+      <li>部屋の掃除: 入退室時に必ず実施すること</li>
+      <li>布団は、布団掃除機をかけること</li>
+      <li>食べ物残しは、必ず持ち帰ること</li>
+      <li>除湿器使用時は水を捨てること</li>
+      <li>BBQ火の後始末をくれぐれもしっかり行うこと</li>
+      <li>ゴミは持ち帰るか、または分別して別荘内のゴミ場にもっていく</li>
+      <li>禁止事項: BBQ（19時以降）、焚火（直火）、花火、近隣住民への迷惑行為・大きな声</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>8. 駐車場について</h2>
+    <ul>
+      <li>別荘の前に駐車スペース1台分は駐車可能です。</li>
+      <li>隣の住民に迷惑をかけないよう、路肩に寄せて停めてください。</li>
+      <li>それ以外の車はお客様駐車場に停めてください（駐車無料）。</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>別荘貸出ルール</h2>
+
+    <h3>1. 利用対象者</h3>
+    <ul>
+      <li>正社員、契約社員、アルバイトなど会社が認めた従業員</li>
+      <li>原則として家族または同伴者（同伴者は事前申請）合わせて6名まで</li>
+    </ul>
+
+    <h3>2. 利用期間</h3>
+    <ul>
+      <li>1回の利用は最大2泊3日まで（繁忙期は1泊2日）</li>
+      <li>同一人物による利用は、2月に1回まで</li>
+      <li>ゴールデンウィーク・夏季・年末年始など繁忙期は抽選制</li>
+    </ul>
+
+    <h3>3. キャンセルポリシー</h3>
+    <ul>
+      <li>利用日の7日前まで基本キャンセル可</li>
+      <li>7日前から当日までのキャンセルは、その日から6カ月間は予約不可</li>
+      <li>体調不良・災害等やむを得ない場合は当日キャンセルOK</li>
+    </ul>
+
+    <h3>4. 利用料</h3>
+    <ul>
+      <li>無料</li>
+      <li>タオル類・洗面用具（歯ブラシなど）は別途料金</li>
+    </ul>
+
+    <h3>5. 使用上の注意</h3>
+    <ul>
+      <li>ゴミの分別・清掃・戸締まりなど利用者責任で実施</li>
+      <li>備品・設備の破損や紛失は速やかに報告し、修理費用を請求する場合あり</li>
+      <li>近隣住民への配慮（騒音禁止・夜間マナー遵守）</li>
+    </ul>
+
+    <h3>6. 禁止事項</h3>
+    <ul>
+      <li>無断キャンセル</li>
+      <li>営利目的の利用（第三者への又貸しなど）</li>
+      <li>法令違反行為、危険物の持ち込み、ペット同伴（特に記載がない限り）</li>
+    </ul>
+
+    <h3>7. 免責事項</h3>
+    <ul>
+      <li>天災・不可抗力による利用中止の場合、会社は補償責任を負わない</li>
+      <li>貴重品の盗難・紛失等は利用者の責任</li>
+      <li>利用者は本施設利用に伴うリスクを理解し、自己責任で管理する</li>
+      <li>当社は、施設利用中の怪我や事故に関して一切の責任を負わない</li>
+    </ul>
+
+    <h3>8. その他</h3>
+    <ul>
+      <li>虫および野生動物（蛇、猿など）に注意してください。</li>
+    </ul>
+  </section>
+
+</main>
+</body>
+</html>
