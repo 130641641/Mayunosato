@@ -998,7 +998,7 @@
         <colgroup id="weekColgroup"></colgroup>
         <thead id="weekHead"></thead>
         <tbody id="weekBody">
-          <tr><td colspan="5" style="text-align:center;padding:20px;color:#718096">読み込み中...</td></tr>
+          <tr><td colspan="4" style="text-align:center;padding:20px;color:#718096">読み込み中...</td></tr>
         </tbody>
       </table>
     </div>
@@ -1117,13 +1117,14 @@
 // ============================================================
 
 // GASウェブアプリのURL（デプロイ後に取得したURLを貼り付けてください）
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxUKy65AYQAUXTnI29LeH6yJYqtiT9Dd_FxZoE6I1Ykhnv1NqKDCYnlfcpD9S7_mmS6/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxUdj8pBQ9mOTZnwzDwb8_zHsvGzvq8n7qILzWWwa7GXHVnxtctmlkGmzAs4wUuRMt_/exec';
 
-// 受付時間スロット（9:00〜12:00, 12:00〜21:00）
-const TIME_SLOTS = ['09:00', '12:00'];
+// 受付時間スロット（9:00〜13:00, 13:00〜17:00, 17:00〜翌9:00）
+const TIME_SLOTS = ['09:00', '13:00', '17:00'];
 const SLOT_END_TIME = {
-  '09:00': '12:00',
-  '12:00': '21:00'
+  '09:00': '13:00',
+  '13:00': '17:00',
+  '17:00': '09:00'
 };
 
 // 参加人数リスト（1〜6名）
@@ -1189,6 +1190,15 @@ function getMonthDates(monthStr) {
     dates.push(`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`);
   }
   return dates;
+}
+
+function getWeekTableColspan() {
+  return TIME_SLOTS.length + 1;
+}
+
+function renderMonthLoadingRow() {
+  document.getElementById('weekBody').innerHTML =
+    `<tr><td colspan="${getWeekTableColspan()}" style="text-align:center;padding:20px;color:#718096">読み込み中...</td></tr>`;
 }
 
 function initWeekNav() {
@@ -1286,8 +1296,7 @@ async function loadMonthReservations() {
   }
   if (allCached) { renderMonthSlots(monthData); return; }
 
-  document.getElementById('weekBody').innerHTML =
-    '<tr><td colspan="5" style="text-align:center;padding:20px;color:#718096">読み込み中...</td></tr>';
+  renderMonthLoadingRow();
 
   if (!isGasUrlConfigured()) { renderMonthSlots(monthData); return; }
 
