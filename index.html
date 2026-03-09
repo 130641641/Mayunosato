@@ -328,9 +328,25 @@
     gap: 8px;
     margin-top: 6px;
   }
+  .time-options.two-day {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .time-day-group {
+    border: 1px solid #d8e3f4;
+    border-radius: 12px;
+    background: #f8fbff;
+    padding: 8px;
+  }
+  .time-day-group h4 {
+    font-size: 0.8rem;
+    color: #334155;
+    margin-bottom: 6px;
+  }
   .time-option {
     display: flex;
     align-items: center;
+    flex-wrap: nowrap;
     gap: 8px;
     border: 1px solid #cfd9ea;
     border-radius: 10px;
@@ -351,6 +367,17 @@
     margin-left: auto;
     color: #64748b;
     font-size: 0.78rem;
+  }
+  .time-option span {
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .time-option small {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .time-option small:empty {
+    display: none;
   }
   .modal-buttons {
     display: flex;
@@ -780,42 +807,59 @@
       margin-top: 10px;
       justify-content: center;
     }
+
+    #bookModal,
+    #cancelModal {
+      padding: 0;
+    }
+
+    #bookModal .modal,
+    #cancelModal .modal {
+      width: 100vw;
+      max-width: none;
+      min-height: 100dvh;
+      max-height: 100dvh;
+      border-radius: 0;
+      padding: 12px;
+      overflow-y: auto;
+    }
   }
 
   /* ===== レスポンシブ ===== */
   @media (max-width: 480px) {
     #bookModal .modal,
     #cancelModal .modal {
-      width: min(100%, 420px);
-      max-height: calc(100vh - 20px);
-      padding: 16px;
+      width: 100vw;
+      min-height: 100dvh;
+      max-height: 100dvh;
+      padding: 12px;
       overflow-y: auto;
       overscroll-behavior: contain;
     }
 
     #bookModal .modal h2,
     #cancelModal .modal h2 {
-      font-size: 1.03rem;
-      margin-bottom: 12px;
-      padding-bottom: 6px;
+      font-size: 0.96rem;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
     }
 
     #bookModal .slot-info,
     #cancelModal .slot-info {
-      margin-bottom: 10px;
-      padding: 8px 10px;
-      font-size: 0.84rem;
-      line-height: 1.35;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      line-height: 1.28;
     }
 
     #bookModal .form-group,
     #cancelModal .form-group {
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     #bookModal .form-group label,
     #cancelModal .form-group label {
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       margin-bottom: 4px;
     }
 
@@ -825,40 +869,87 @@
     #cancelModal .form-group select,
     #cancelModal .form-group input[type="text"],
     #cancelModal .form-group input[type="password"] {
-      min-height: 40px;
-      padding: 8px 10px;
-      font-size: 0.9rem;
+      min-height: 36px;
+      padding: 6px 9px;
+      font-size: 0.84rem;
     }
 
     #bookModal .time-options,
     #cancelModal .time-options {
-      gap: 6px;
-      margin-top: 4px;
+      gap: 3px;
+      margin-top: 1px;
+    }
+
+    #bookModal .time-options.two-day {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      align-items: start;
+    }
+
+    #cancelModal .time-options.two-day {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      align-items: start;
+    }
+
+    #bookModal .time-day-group {
+      padding: 4px;
+      border-radius: 10px;
+      align-self: start;
+    }
+
+    #cancelModal .time-day-group {
+      padding: 4px;
+      border-radius: 10px;
+      align-self: start;
+    }
+
+    #bookModal .time-day-group h4 {
+      font-size: 0.72rem;
+      margin-bottom: 2px;
+    }
+
+    #cancelModal .time-day-group h4 {
+      font-size: 0.72rem;
+      margin-bottom: 2px;
     }
 
     #bookModal .time-option,
     #cancelModal .time-option {
-      padding: 7px 8px;
+      padding: 3px 5px;
       border-radius: 8px;
-      font-size: 0.82rem;
-      align-items: flex-start;
+      font-size: 0.74rem;
+      line-height: 1.15;
+      align-items: center;
+    }
+
+    #bookModal .time-option input[type="checkbox"],
+    #cancelModal .time-option input[type="checkbox"] {
+      width: 12px;
+      height: 12px;
+      margin-top: 0;
+    }
+
+    #bookModal .time-option small,
+    #cancelModal .time-option small {
+      display: none;
     }
 
     #bookModal .modal-buttons,
     #cancelModal .modal-buttons {
       position: sticky;
       bottom: -1px;
-      margin-top: 12px;
-      padding-top: 8px;
+      margin-top: 6px;
+      padding-top: 4px;
       background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #ffffff 35%);
       z-index: 1;
     }
 
     #bookModal .btn,
     #cancelModal .btn {
-      min-height: 42px;
-      font-size: 0.9rem;
-      padding: 8px;
+      min-height: 34px;
+      font-size: 0.78rem;
+      padding: 4px;
     }
 
     header h1 { font-size: 1.1rem; }
@@ -919,6 +1010,61 @@
     }
   }
 
+  @media (max-width: 480px) and (max-height: 760px) {
+    #bookModal .modal,
+    #cancelModal .modal {
+      padding: 10px;
+    }
+
+    #bookModal .modal h2,
+    #cancelModal .modal h2 {
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    #bookModal .slot-info,
+    #cancelModal .slot-info {
+      font-size: 0.74rem;
+      margin-bottom: 6px;
+      padding: 5px 7px;
+    }
+
+    #bookModal .form-group,
+    #cancelModal .form-group {
+      margin-bottom: 6px;
+    }
+
+    #bookModal .form-group label,
+    #cancelModal .form-group label {
+      font-size: 0.7rem;
+      margin-bottom: 3px;
+    }
+
+    #bookModal .form-group select,
+    #bookModal .form-group input[type="text"],
+    #bookModal .form-group input[type="password"],
+    #cancelModal .form-group select,
+    #cancelModal .form-group input[type="text"],
+    #cancelModal .form-group input[type="password"] {
+      min-height: 34px;
+      font-size: 0.8rem;
+      padding: 5px 8px;
+    }
+
+    #bookModal .time-option,
+    #cancelModal .time-option {
+      padding: 3px 5px;
+      font-size: 0.72rem;
+    }
+
+    #bookModal .btn,
+    #cancelModal .btn {
+      min-height: 34px;
+      font-size: 0.78rem;
+      padding: 5px;
+    }
+  }
+
   @media (max-width: 375px) {
     .week-nav.active {
       grid-template-columns: minmax(84px, 1fr) minmax(126px, 1.25fr) minmax(84px, 1fr);
@@ -972,8 +1118,8 @@
 <!-- ===== メインコンテンツ ===== -->
 <main>
   <div class="legend">
-    <div class="legend-item"><div class="legend-box available"></div>空き（クリックで予約）</div>
-    <div class="legend-item"><div class="legend-box booked"></div>予約済み（クリックでキャンセル）</div>
+    <div class="legend-item"><div class="legend-box available"></div>空き</div>
+    <div class="legend-item"><div class="legend-box booked"></div>予約済み</div>
   </div>
 
   <!-- 日別ビュー -->
@@ -1058,11 +1204,11 @@
       <div id="cancelTimeOptions" class="time-options"></div>
     </div>
     <div class="form-group">
-      <label for="cancelRoom">参加人数（本人確認）</label>
+      <label for="cancelRoom">参加人数</label>
       <select id="cancelRoom"></select>
     </div>
     <div class="form-group">
-      <label for="cancelName">予約者の氏名（本人確認）</label>
+      <label for="cancelName">予約者の氏名</label>
       <input type="text" id="cancelName" placeholder="予約時の氏名" maxlength="20">
     </div>
     <div class="form-group">
@@ -1117,7 +1263,7 @@
 // ============================================================
 
 // GASウェブアプリのURL（デプロイ後に取得したURLを貼り付けてください）
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxUdj8pBQ9mOTZnwzDwb8_zHsvGzvq8n7qILzWWwa7GXHVnxtctmlkGmzAs4wUuRMt_/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyAa8U4-7RZt6WreYEpfNY5b8DBVtMIra0zebCzSvRoHCjnd6av3qtE2VdIyoYziI18/exec';
 
 // 受付時間スロット（9:00〜13:00, 13:00〜17:00, 17:00〜翌9:00）
 const TIME_SLOTS = ['09:00', '13:00', '17:00'];
@@ -1130,6 +1276,7 @@ const SLOT_END_TIME = {
 // 参加人数リスト（1〜6名）
 const ROOM_NUMBERS = ['1', '2', '3', '4', '5', '6'];
 const HOLIDAY_API_URL = 'https://holidays-jp.github.io/api/v1/date.json';
+const BOOKABLE_DAYS = 2;
 
 // ============================================================
 // 状態管理
@@ -1645,9 +1792,8 @@ function renderSlots(reservations) {
 // ============================================================
 function openBookModal(timeSlot) {
   pendingSlot = { timeSlot };
-  const d = parseDate(currentDate);
   document.getElementById('bookSlotInfo').textContent =
-    `${formatDateJa(d)} の予約時間を選択してください`;
+    '予約時間を選択してください';
   renderBookTimeOptions(timeSlot);
   document.getElementById('bookName').value = '';
   document.getElementById('bookPurpose').value = '周辺観光';
@@ -1660,13 +1806,17 @@ function openBookModal(timeSlot) {
 }
 
 async function submitBooking() {
-  const startTimes = getSelectedCheckboxValues('bookTimeOptions', 'bookTime');
+  const slotKeys = getSelectedCheckboxValues('bookTimeOptions', 'bookTime');
+  const slots = slotKeys
+    .map(key => String(key).split('|'))
+    .filter(parts => parts.length === 2)
+    .map(parts => ({ date: parts[0], startTime: parts[1] }));
   const participants = document.getElementById('bookRoom').value;
   const name = document.getElementById('bookName').value.trim();
   const purpose = document.getElementById('bookPurpose').value;
   const password = document.getElementById('bookPassword').value.trim();
 
-  if (startTimes.length === 0) {
+  if (slots.length === 0) {
     document.getElementById('bookTimeError').classList.add('visible');
     return;
   }
@@ -1696,8 +1846,7 @@ async function submitBooking() {
       method: 'POST',
       body: JSON.stringify({
         action: 'add',
-        date: currentDate,
-        startTimes,
+        slots,
         participants,
         name,
         purpose,
@@ -1712,19 +1861,29 @@ async function submitBooking() {
       (json.reservations && json.reservations.length ? json.reservations : [json.reservation]).filter(Boolean)
     );
 
-    const fallbackAddedList = addedList.length > 0 ? addedList : normalizeReservations(startTimes.map((slot, idx) => ({
+    const fallbackAddedList = addedList.length > 0 ? addedList : normalizeReservations(slots.map((slot, idx) => ({
       id: `local-${Date.now()}-${idx}`,
-      date: currentDate,
-      startTime: slot,
+      date: slot.date,
+      startTime: slot.startTime,
       participants,
       name,
       purpose,
       createdAt: new Date().toISOString()
     })));
 
-    const dayList = (getCached(currentDate) || []).filter(r => startTimes.indexOf(r.startTime) === -1);
-    fallbackAddedList.forEach(r => dayList.push(r));
-    setCache(currentDate, dayList);
+    const byDate = new Map();
+    fallbackAddedList.forEach(r => {
+      const key = String(r.date || '');
+      if (!key) return;
+      if (!byDate.has(key)) byDate.set(key, []);
+      byDate.get(key).push(r);
+    });
+
+    byDate.forEach((list, dateKey) => {
+      const merged = (getCached(dateKey) || []).filter(r => !list.some(a => a.startTime === r.startTime));
+      list.forEach(r => merged.push(r));
+      setCache(dateKey, merged);
+    });
 
     closeModal('bookModal');
     showToast(`予約が完了しました（${fallbackAddedList.length}件）`, 'success');
@@ -1740,15 +1899,13 @@ async function submitBooking() {
 // ============================================================
 // キャンセルモーダル
 // ============================================================
-function openCancelModal(reservation, timeSlot) {
+async function openCancelModal(reservation, timeSlot) {
   pendingSlot = { reservation, timeSlot };
-  const d = parseDate(currentDate);
-  const targetReservations = getCancelableReservationsForCurrentDate(reservation);
+  const targetReservations = await getCancelableReservationsForTwoDays(reservation);
   renderCancelTimeOptions(targetReservations, reservation && reservation.id);
   document.getElementById('cancelSlotInfo').innerHTML =
-    `${formatDateJa(d)}<br>` +
-    `<strong>${reservation.participants}名</strong> ${escapeHtml(reservation.name)}<br>` +
-    `<small>${escapeHtml(reservation.purpose || '')}</small>`;
+    `キャンセル時間を選択してください<br>` +
+    `<strong>${escapeHtml(String((reservation && reservation.participants) || ''))}名</strong> ${escapeHtml(String((reservation && reservation.name) || ''))}`;
   document.getElementById('cancelName').value = '';
   document.getElementById('cancelPassword').value = '';
   document.getElementById('cancelError').classList.remove('visible');
@@ -1804,10 +1961,13 @@ async function submitCancel() {
       return;
     }
 
-    // 再取得せず、ローカルキャッシュから対象予約を除外
-    const dayList = getCached(currentDate) || [];
-    const filtered = dayList.filter(r => ids.indexOf(String(r.id)) === -1);
-    setCache(currentDate, filtered);
+    // 再取得せず、ローカルキャッシュから対象予約を全日付分除外
+    const idSet = new Set(ids.map(v => String(v)));
+    _cache.forEach((entry, dateKey) => {
+      const list = Array.isArray(entry && entry.data) ? entry.data : [];
+      const filtered = list.filter(r => !idSet.has(String(r.id)));
+      setCache(dateKey, filtered);
+    });
 
     closeModal('cancelModal');
     showToast(`キャンセルしました（${ids.length}件）`, 'success');
@@ -2016,64 +2176,122 @@ function getReservationsForDate(dateStr) {
 function renderBookTimeOptions(preferredTime) {
   const container = document.getElementById('bookTimeOptions');
   if (!container) return;
-  const list = getReservationsForDate(currentDate);
-  const reservedMap = new Map(list.map(r => [String(r.startTime), r]));
-  const items = [];
+  container.classList.add('two-day');
+
+  const targetDates = [];
+  for (let i = 0; i < BOOKABLE_DAYS; i++) {
+    targetDates.push(offsetDate(currentDate, i));
+  }
+
+  const labels = ['日', '月', '火', '水', '木', '金', '土'];
+  let html = '';
   let checkedCount = 0;
 
-  TIME_SLOTS.forEach(ts => {
-    const reserved = reservedMap.get(ts);
-    const past = isPastSlot(currentDate, ts);
-    const selectable = !reserved && !past;
-    const checked = selectable && (ts === preferredTime || (!preferredTime && checkedCount === 0));
-    if (checked) checkedCount++;
-    const status = reserved ? `${escapeHtml(reserved.participants)}名 ${escapeHtml(reserved.name)} 予約済み` : (past ? '受付終了' : '選択可');
-    items.push({
-      ts,
-      selectable,
-      checked,
-      status
+  targetDates.forEach((dateStr, idx) => {
+    const dateObj = parseDate(dateStr);
+    const heading = `${dateObj.getMonth() + 1}/${dateObj.getDate()}(${labels[dateObj.getDay()]})`;
+    const list = getReservationsForDate(dateStr);
+    const reservedMap = new Map(list.map(r => [String(r.startTime), r]));
+
+    let groupHtml = '';
+    TIME_SLOTS.forEach(ts => {
+      const reserved = reservedMap.get(ts);
+      const past = isPastSlot(dateStr, ts);
+      const selectable = !reserved && !past;
+      const checked = selectable && ((idx === 0 && ts === preferredTime) || (!preferredTime && checkedCount === 0));
+      if (checked) checkedCount++;
+      groupHtml += `<label class="time-option${itemSelectableClass(selectable)}">` +
+        `<input type="checkbox" name="bookTime" value="${escapeHtml(dateStr)}|${escapeHtml(ts)}" ${checked ? 'checked' : ''} ${selectable ? '' : 'disabled'}>` +
+        `<span>${formatTimeRange(ts)}</span>` +
+        `<small></small>` +
+        `</label>`;
     });
+
+    html += `<div class="time-day-group"><h4>${heading}</h4>${groupHtml}</div>`;
   });
 
+  container.innerHTML = html;
+
   if (checkedCount === 0) {
-    const firstSelectable = items.find(item => item.selectable);
+    const firstSelectable = container.querySelector('input[name="bookTime"]:not([disabled])');
     if (firstSelectable) {
       firstSelectable.checked = true;
     }
   }
-
-  container.innerHTML = items.map(item =>
-    `<label class="time-option${item.selectable ? '' : ' disabled'}">` +
-    `<input type="checkbox" name="bookTime" value="${escapeHtml(item.ts)}" ${item.checked ? 'checked' : ''} ${item.selectable ? '' : 'disabled'}>` +
-    `<span>${formatTimeRange(item.ts)}</span>` +
-    `<small>${item.status}</small>` +
-    `</label>`
-  ).join('');
 }
 
-function getCancelableReservationsForCurrentDate(clickedReservation) {
-  const list = (getReservationsForDate(currentDate) || []).slice();
-  if (list.length > 0) return list;
+function itemSelectableClass(selectable) {
+  return selectable ? '' : ' disabled';
+}
+
+async function getReservationsForDateAsync(dateStr) {
+  const cached = getCached(dateStr);
+  if (cached) return cached;
+  if (dateStr === currentDate && Array.isArray(reservations) && reservations.length > 0) return reservations;
+  if (!isGasUrlConfigured()) return [];
+  try {
+    await reloadDateCache(dateStr);
+  } catch (err) {
+    console.warn('予約データ取得失敗:', dateStr, err);
+  }
+  return getCached(dateStr) || [];
+}
+
+async function getCancelableReservationsForTwoDays(clickedReservation) {
+  const targetDates = [];
+  for (let i = 0; i < BOOKABLE_DAYS; i++) {
+    targetDates.push(offsetDate(currentDate, i));
+  }
+
+  const all = [];
+  for (const dateStr of targetDates) {
+    const list = await getReservationsForDateAsync(dateStr);
+    list.forEach(r => all.push(r));
+  }
+
+  if (all.length > 0) return all;
   return clickedReservation ? [clickedReservation] : [];
 }
 
 function renderCancelTimeOptions(reservationList, selectedId) {
   const container = document.getElementById('cancelTimeOptions');
   if (!container) return;
-  const list = (reservationList || []).slice().sort((a, b) => String(a.startTime).localeCompare(String(b.startTime)));
-  if (list.length === 0) {
-    container.innerHTML = '<div class="time-option disabled">対象の予約がありません</div>';
-    return;
+  container.classList.add('two-day');
+  const labels = ['日', '月', '火', '水', '木', '金', '土'];
+  const targetDates = [];
+  for (let i = 0; i < BOOKABLE_DAYS; i++) {
+    targetDates.push(offsetDate(currentDate, i));
   }
-  container.innerHTML = list.map(r => {
-    const checked = String(r.id) === String(selectedId) ? 'checked' : '';
-    return `<label class="time-option">` +
-      `<input type="checkbox" name="cancelTime" value="${escapeHtml(String(r.id))}" ${checked}>` +
-      `<span>${formatTimeRange(r.startTime)}</span>` +
-      `<small>${escapeHtml(r.purpose || '')}</small>` +
-      `</label>`;
-  }).join('');
+
+  const reservationMap = new Map();
+  (reservationList || []).forEach(r => {
+    const dateKey = String(r.date || currentDate);
+    const timeKey = String(r.startTime || '');
+    if (!dateKey || !timeKey) return;
+    reservationMap.set(`${dateKey}|${timeKey}`, r);
+  });
+
+  let html = '';
+  targetDates.forEach(dateStr => {
+    const d = parseDate(dateStr);
+    const heading = `${d.getMonth() + 1}/${d.getDate()}(${labels[d.getDay()]})`;
+
+    const groupHtml = TIME_SLOTS.map(ts => {
+      const reservation = reservationMap.get(`${dateStr}|${ts}`);
+      const selectable = Boolean(reservation);
+      const checked = selectable && String(reservation.id) === String(selectedId) ? 'checked' : '';
+
+      return `<label class="time-option${selectable ? '' : ' disabled'}">` +
+        `<input type="checkbox" name="cancelTime" value="${selectable ? escapeHtml(String(reservation.id)) : ''}" ${checked} ${selectable ? '' : 'disabled'}>` +
+        `<span>${formatTimeRange(ts)}</span>` +
+        `<small></small>` +
+        `</label>`;
+    }).join('');
+
+    html += `<div class="time-day-group"><h4>${heading}</h4>${groupHtml}</div>`;
+  });
+
+  container.innerHTML = html;
 }
 
 function isGasUrlConfigured() {
